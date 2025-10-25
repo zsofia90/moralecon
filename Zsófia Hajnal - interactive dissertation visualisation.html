@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moral Economic Synthesis - Interactive Model</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.11.0/math.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        
+        header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+            flex-wrap: wrap;
+        }
+        
+        .tab-btn {
+            padding: 12px 24px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            margin-bottom: -2px;
+        }
+        
+        .tab-btn:hover {
+            color: #667eea;
+        }
+        
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .section h2 {
+            font-size: 18px;
+            color: #667eea;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        
+        .section h3 {
+            font-size: 14px;
+            color: #555;
+            margin-top: 16px;
+            margin-bottom: 10px;
+        }
+        
+        .explanation {
+            background: #f8f9ff;
+            padding: 15px;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+            font-size: 13px;
+            line-height: 1.6;
+            margin: 15px 0;
+        }
+        
+        .formula {
+            background: #f0f0f0;
+            padding: 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        
+        .controls {
+            background: #f8f9ff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .control-group {
+            margin-bottom: 16px;
+        }
+        
+        .control-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 6px;
+        }
+        
+        .control-group input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #ddd;
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .control-group input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .value-display {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 30px 0;
+        }
+        
+        .chart-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .metric-box {
+            background: #f8f9ff;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .metric-label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+        
+        .metric-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: #667eea;
+        }
+        
+        .scenario-button {
+            padding: 8px 16px;
+            margin: 4px;
+            border: 2px solid #ddd;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .scenario-button:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        
+        .scenario-button.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .equation-system {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.8;
+        }
+        
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin: 15px 0;
+        }
+        
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            border-top: 1px solid #e0e0e0;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .insight {
+            background: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 12px;
+            border-radius: 4px;
+            margin: 15px 0;
+            font-size: 13px;
+        }
+        
+        .warning {
+            background: #ffe0e0;
+            border-left: 4px solid #f44336;
+            padding: 12px;
+            border-radius: 4px;
+            margin: 15px 0;
+            font-size: 13px;
+        }
+        
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+            
+            header h1 {
+                font-size: 20px;
+            }
+            
+            .chart-container {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Moral Economic Synthesis</h1>
+            <p>Interactive Model: Rational Selflessness, Value Creation & Environmental Equilibria</p>
+        </header>
+        
+        <div class="content">
+            <!-- Tab Navigation -->
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('foundation')">Foundation</button>
+                <button class="tab-btn" onclick="switchTab('sharing')">Sharing & Value</button>
+                <button class="tab-btn" onclick="switchTab('technology')">Technology Levels</button>
+                <button class="tab-btn" onclick="switchTab('equilibria')">Equilibria</button>
+                <button class="tab-btn" onclick="switchTab('synthesis')">Synthesis</button>
+            </div>
+            
+            <!-- Tab 1: Foundation -->
+            <div id="foundation" class="tab-content active">
+                <div class="section">
+                    <h2>Core Concepts: Finite Needs & Rational Selflessness</h2>
+                    
+                    <div class="explanation">
+                        <strong>Finite and Satiable Human Needs:</strong> Contrary to mainstream economics, this framework assumes human needs are finite and satiable. Beyond basic subsistence, human needs reach satiation points. This creates space for redistribution and sharing without sacrificing individual well-being.
+                    </div>
+                    
+                    <div class="explanation">
+                        <strong>Rational Selflessness:</strong> A trait arising from recognizing that selfless acts generate and multiply value. It emerges from: (1) the need to help others—embedded in human nature; (2) awareness that interdependence and labor division reward cooperation; (3) understanding that moral conduct benefits the individual intrinsically and the collective materially.
+                    </div>
+                    
+                    <h3>The Need to Help Others</h3>
+                    <p>Human beings have an intrinsic need to help and support others. This need is not merely altruistic sentiment but a fundamental psychological and economic driver. When satisfied through moral economic frameworks, it produces:</p>
+                    <ul style="margin-left: 20px; margin-top: 10px;">
+                        <li>Value creation and multiplication (on giving and receiving ends)</li>
+                        <li>Increased social cohesion and trust</li>
+                        <li>Sustainable economic patterns aligned with environmental boundaries</li>
+                        <li>Greater individual well-being and purpose</li>
+                    </ul>
+                </div>
+                
+                <div class="section">
+                    <h2>Key Hypotheses</h2>
+                    
+                    <div class="metric-box">
+                        <div class="metric-label">H1: Rational Selflessness & Marginal Propensity to Give</div>
+                        <p style="margin-top: 8px; font-size: 13px;">Awareness of rational selflessness significantly increases individuals' marginal propensity to give, share, and reciprocate. The need to help others is embedded in human needs structure.</p>
+                    </div>
+                    
+                    <div class="metric-box" style="margin-top: 15px;">
+                        <div class="metric-label">H2: Macro-Level Compatibility</div>
+                        <p style="margin-top: 8px; font-size: 13px;">Incorporating rational selflessness creates higher compatibility between economic models through: (a) giving/sharing as value creation, (b) objective technology measurement, (c) finite needs within environmental capacity.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tab 2: Sharing as Value Creation -->
+            <div id="sharing" class="tab-content">
+                <div class="section">
+                    <h2>The Saint Martin Equations: Shared Joy is Double Joy</h2>
+                    
+                    <div class="explanation">
+                        <strong>Micro-Level (Two Persons):</strong> When joy or value is shared equally, the total value increases. The legend of St. Martin illustrates this principle: sharing creates value multiplication beyond the original amount.
+                    </div>
+                    
+                    <h3>Mathematical Framework</h3>
+                    <div class="equation-system">
+I = |J₁ - J₂| / (J₁ + J₂)
+Jₛ = (J₁ + J₂) × (2 - I)
+                    </div>
+                    
+                    <p style="font-size: 13px; margin-top: 10px;">Where:</p>
+                    <ul style="margin-left: 20px; font-size: 13px;">
+                        <li><strong>I</strong> = Inequality indicator (0 = perfect equality, 1 = total inequality)</li>
+                        <li><strong>J₁, J₂</strong> = Individual joys/values</li>
+                        <li><strong>Jₛ</strong> = Shared joy value (ranges from J₁+J₂ to 2(J₁+J₂))</li>
+                    </ul>
+                    
+                    <h3 style="margin-top: 20px;">Macro-Level (n Persons)</h3>
+                    <div class="equation-system">
+I = (Σ|Jᵢ - J̄| / 2) / ΣJᵢ
+Jₛ = ΣJᵢ × (n - I)
+                    </div>
+                    
+                    <div class="controls">
+                        <h3>Interactive Simulation: Sharing Dynamics</h3>
+                        
+                        <div class="control-group">
+                            <label>Number of People (n): <span class="value-display" id="nValue">5</span></label>
+                            <input type="range" id="nSlider" min="2" max="20" value="5" oninput="updateSharingModel()">
+                        </div>
+                        
+                        <div class="control-group">
+                            <label>Total Value to Share: <span class="value-display" id="totalValue">100</span></label>
+                            <input type="range" id="totalSlider" min="50" max="500" value="100" step="10" oninput="updateSharingModel()">
+                        </div>
+                        
+                        <div class="control-group">
+                            <label>Equality Level: <span class="value-display" id="equalityValue">80%</span></label>
+                            <input type="range" id="equalitySlider" min="0" max="100" value="80" oninput="updateSharingModel()">
+                        </div>
+                        
+                        <button class="btn-primary" onclick="updateSharingModel()">Calculate Value Multiplication</button>
+                    </div>
+                    
+                    <div class="metrics">
+                        <div class="metric-box">
+                            <div class="metric-label">Inequality Indicator (I)</div>
+                            <div class="metric-value" id="inequalityResult">0.20</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-label">Base Value</div>
+                            <div class="metric-value" id="baseValueResult">100</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-label">Shared Joy Value</div>
+                            <div class="metric-value" id="sharedJoyResult">400</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-label">Value Multiplication</div>
+                            <div class="metric-value" id="multiplicationResult">4.0x</div>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container" style="margin-top: 30px;">
+                        <canvas id="sharingChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tab 3: Technology Levels -->
+            <div id="technology" class="tab-content">
+                <div class="section">
+                    <h2>Technology Levels & Output Functions</h2>
+                    
+                    <div class="explanation">
+                        <strong>Objective Technology Measurement:</strong> Technology levels are quantified by their effect on output capacity. Rather than using abstract metrics, we measure how technology multiplies the productive capacity of a given population, relative to satisfying finite human needs.
+                    </div>
+                    
+                    <h3>Two Output Scenarios</h3>
+                    
+                    <div class="metric-box" style="margin-top: 15px;">
+                        <strong style="color: #667eea;">Socio-Optimistic (Exponential):</strong>
+                        <div style="margin-top: 8px; font-size: 13px;">
+                            Output increases exponentially with population due to labor division and cooperation efficiency.
+                        </div>
+                        <div class="formula">O(P) = α × P^β × T</div>
+                    </div>
+                    
+                    <div class="metric-box" style="margin-top: 15px;">
+                        <strong style="color: #667eea;">Critical (S-Shaped):</strong>
+                        <div style="margin-top: 8px; font-size: 13px;">
+                            Output initially lags needs, crosses over to surplus, but faces cooperation constraints at larger scales.
+                        </div>
+                        <div class="formula">O(P) = M / (1 + e^(-k(P-P₀)/P₀))</div>
+                    </div>
+                    
+                    <div class="controls">
+                        <h3>Scenario Selection & Parameters</h3>
+                        
+                        <div style="margin-bottom: 15px;">
+                            <strong style="font-size: 13px;">Choose Output Model:</strong>
+                            <div style="margin-top: 10px;">
+                                <button class="scenario-button active" onclick="selectOutputModel('exponential')">Exponential</button>
+                                <button class="scenario-button" onclick="selectOutputModel('sigmoid')">Sigmoid (S-Shaped)</button>
+                            </div>
+                        </div>
+                        
+                        <div class="control-group">
+                            <label>Technology Multiplier (T): <span class="value-display" id="techValue">1.5</span></label>
+                            <input type="range" id="techSlider" min="0.5" max="3" step="0.1" value="1.5" oninput="updateTechModel()">
+                        </div>
+                        
+                        <div class="control-group">
+                            <label>Output Exponent (β): <span class="value-display" id="betaValue">1.2</span></label>
+                            <input type="range" id="betaSlider" min="0.8" max="2" step="0.1" value="1.2" oninput="updateTechModel()">
+                        </div>
+                        
+                        <div class="control-group">
+                            <label>Needs Per Person (γ): <span class="value-display" id="gammaValue">2.0</span></label>
+                            <input type="range" id="gammaSlider" min="1" max="5" step="0.1" value="2.0" oninput="updateTechModel()">
+                        </div>
+                        
+                        <button class="btn-primary" onclick="updateTechModel()">Update Technology Model</button>
+                    </div>
+                    
+                    <div class="chart-container" style="margin-top: 30px;">
+                        <canvas id="technologyChart"></canvas>
+                    </div>
+                    
+                    <div class="insight">
+                        <strong>Key Insight:</strong> As technology advances (T increases), the equilibrium point where output meets needs moves closer to zero population (lower requirement), OR sustains larger populations at the same needs level. This flexibility allows for both sustainability and prosperity.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tab 4: Equilibria -->
+            <div id="equilibria" class="tab-content">
+                <div class="section">
+                    <h2>Needs-Output Equilibria & Environmental Capacity</h2>
+                    
+                    <div class="explanation">
+                        <strong>Dynamic Equilibria:</strong> Economic balance occurs where aggregate human needs intersect with potential output. This equilibrium point varies with technology level and changes dynamically as societies develop. Within this framework, sustainability means maintaining equilibrium below environmental carrying capacity.
+                    </div>
+                    
+                    <div class="two-column">
+                        <div>
+                            <h3>Linear Needs Function</h3>
+                            <div class="formula">N(P) = γ × P</div>
+                            <p style="font-size: 12px; margin-top: 10px;">Needs scale linearly with population. γ represents per-capita needs.</p>
+                        </div>
+                        <div>
+                            <h3>Environmental Capacity</h3>
+                            <div class="formula">EC(T) = f(Technology Level)</div>
+                            <p style="font-size: 12px; margin-top: 10px;">Carrying capacity depends on technology efficiency and sustainability practices.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="controls">
+                        <h3>Equilibrium Analysis</h3>
+                        
+                        <div class="control-group">
+                            <label>Population Range: <span class="value-display" id="popRangeValue">100</span></label>
+                            <input type="range" id="popRangeSlider" min="20" max="200" value="100" oninput="updateEquilibria()">
+                        </div>
+                        
+                        <div class="control-group">
+                            <label>Environmental Carrying Capacity: <span class="value-display" id="capacityValue">75</span></label>
+                            <input type="range" id="capacitySlider" min="30" max="150" value="75" oninput="updateEquilibria()">
+                        </div>
+                        
+                        <div class="control-group">
+                            <label>Technology Level: <span class="value-display" id="techLevelValue">2.0</span></label>
+                            <input type="range" id="techLevelSlider" min="1" max="4" step="0.2" value="2.0" oninput="updateEquilibria()">
+                        </div>
+                        
+                        <button class="btn-primary" onclick="updateEquilibria()">Compute Equilibria</button>
+                    </div>
+                    
+                    <div class="metrics">
+                        <div class="metric-box">
+                            <div class="metric-label">Equilibrium Population</div>
+                            <div class="metric-value" id="eqPopResult">65</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-label">Carrying Capacity Status</div>
+                            <div class="metric-value" id="eqStatusResult" style="color: #4caf50;">Safe</div>
+                        </div>
+                        <div class="metric-box">
+                            <div class="metric-label">Capacity Buffer</div>
+                            <div class="metric-value" id="eqBufferResult">15%</div>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container" style="margin-top: 30px;">
+                        <canvas id="equilibriaChart"></canvas>
+                    </div>
+                    
+                    <div class="note">
+                        <strong>Note:</strong> The model identifies three phases: (1) <strong>Scarcity</strong> – low population, insufficient output; (2) <strong>Surplus</strong> – growing population, abundant output; (3) <strong>Stability</strong> – large population with sufficient output but environmental constraints. S-shaped models distinguish these phases clearly.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tab 5: Synthesis -->
+            <div id="synthesis" class="tab-content">
+                <div class="section">
+                    <h2>Moral Economic Synthesis: Integrated Framework</h2>
+                    
+                    <div class="explanation">
+                        The synthesis integrates three theoretical pillars: (1) <strong>Sharing as value creation</strong>, (2) <strong>Technology as productivity multiplier</strong>, (3) <strong>Environmental capacity as constraint</strong>. Together, these create a coherent economic model built on moral foundations.
+                    </div>
+                    
+                    <h3>The Chain of Connections</h3>
+                    <div style="background: #f8f9ff; padding: 20px; border-radius: 8px; margin: 15px 0;">
+                        <div style="margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #ddd;">
+                            <strong style="color: #667eea;">1. Human Needs & Rational Selflessness</strong>
+                            <p style="font-size: 12px; margin-top: 6px;">Finite needs + Need to help others → Rational Selflessness</p>
+                        </div>
+                        <div style="margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #ddd;">
+                            <strong style="color: #667eea;">2. Sharing Creates Value</strong>
+                            <p style="font-size: 12px; margin-top: 6px;">Selfless behaviors (giving, reciprocating) → Value multiplication (Saint Martin equations)</p>
+                        </div>
+                        <div style="margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid #ddd;">
+                            <strong style="color: #667eea;">3. Technology Amplifies Capacity</strong>
+                            <p style="font-size: 12px; margin-top: 6px;">Advanced technology → Higher output potential → Ability to satisfy needs sustainably</p>
+                        </div>
+                        <div>
+                            <strong style="color: #667eea;">4. Environmental Equilibrium</strong>
+                            <p style="font-size: 12px; margin-top: 6px;">Intersection of needs & output bounded by environmental capacity → Sustainable economic balance</p>
+                        </div>
+                    </div>
+                    
+                    <h3>Practical Implications</h3>
+                    <div class="insight">
+                        <strong>Institutionalize Morality:</strong> Economic systems can embed ethical principles through: cooperative structures, stakeholder governance, purpose-aligned business models, and redistributive mechanisms that reflect the finite nature of human needs.
+                    </div>
+                    
+                    <div class="insight">
+                        <strong>Technology as Moral Tool:</strong> Technology should be deployed to reduce required population for need satisfaction, increase carrying capacity, or shift to non-extractive economic activities—not merely to maximize consumption.
+                    </div>
+                    
+                    <div class="insight">
+                        <strong>Sustainability Through Sufficiency:</strong> By accepting finite needs and designing for satiation rather than endless growth, economies can operate permanently within environmental boundaries while maintaining prosperity.
+                    </div>
+                    
+                    <div class="controls" style="margin-top: 30px;">
+                        <h3>Integrated Scenario Comparison</h3>
+                        
+                        <button class="btn-primary" onclick="generateScenario('sustainable')">Sustainable (High Tech, Sharing)</button>
+                        <button class="btn-primary" onclick="generateScenario('transitional')">Transitional</button>
+                        <button class="btn-primary" onclick="generateScenario('current')">Current System</button>
+                        
+                        <div id="scenarioOutput" style="margin-top: 20px;"></div>
+                    </div>
+                    
+                    <div class="chart-container" style="margin-top: 30px;">
+                        <canvas id="synthesisChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <h2>Model Characteristics</h2>
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                            <tr style="background: #f0f0f0;">
+                                <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Element</th>
+                                <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Theoretical Status</th>
+                                <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Characteristics</th>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px; border: 1px solid #ddd;">Sharing as Value Creation</td>
+                                <td style="padding: 10px; border: 1px solid #ddd;">Conditionally Explanatory</td>
+                                <td style="padding: 10px; border: 1px solid #ddd;">Direct normative consequences; guides toward selfless cooperation</td>
+                            </tr>
+                            <tr style="background: #f8f9ff;">
+                                <td style="padding: 10px; border: 1px solid #ddd;">Technology Levels</td>
+                                <td style="padding: 10px; border: 1px solid #ddd;">Interpretative & Illustrative</td>
+                                <td style="padding: 10px; border: 1px solid #ddd;">Positivist structure serving larger moral economic framework</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 10px; border: 1px solid #ddd;">Environmental Equilibria</td>
+                                <td style="padding: 10px; border: 1px solid #ddd;">Conditionally Predictive</td>
+                                <td style="padding: 10px; border: 1px solid #ddd;">Model of economic-environmental balance; closed in consistency, open in flexibility</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p><strong>Source:</strong> Zsófia Hajnal, "Reinterpreting the Moral Economy: Building on the Economic Possibilities of Selflessness" (Doctoral Dissertation, Corvinus University of Budapest, 2025)</p>
+            <p><strong>Key Concepts:</strong> Rational Selflessness · Finite Human Needs · Sharing as Value Creation (Saint Martin Equations) · Technology Levels · Environmental Capacity · Dynamic Equilibria · Moral Economic Synthesis</p>
+            <p style="margin-top: 12px; font-size: 11px;"><em>This interactive visualization demonstrates the chain of connections integrating moral economic elements into a coherent theoretical framework. Results are illustrative and model-dependent; actual applications require empirical validation and contextual adaptation.</em></p>
+        </div>
+    </div>
+    
+    <script>
+        // Chart instances
+        let charts = {};
+        
+        // Tab switching
+        function switchTab(tabName) {
+            const tabs = document.querySelectorAll('.tab-content');
+            const buttons = document.querySelectorAll('.tab-btn');
+            
+            tabs.forEach(tab => tab.classList.remove('active'));
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+            
+            // Redraw charts when tab is switched
+            setTimeout(() => {
+                if (tabName === 'sharing' && charts.sharingChart) charts.sharingChart.resize();
+                if (tabName === 'technology' && charts.technologyChart) charts.technologyChart.resize();
+                if (tabName === 'equilibria' && charts.equilibriaChart) charts.equilibriaChart.resize();
+                if (tabName === 'synthesis' && charts.synthesisChart) charts.synthesisChart.resize();
+            }, 100);
+        }
+        
+        // Sharing Model Updates
+        function updateSharingModel() {
+            const n = parseInt(document.getElementById('nSlider').value);
+            const total = parseFloat(document.getElementById('totalSlider').value);
+            const equality = parseFloat(document.getElementById('equalitySlider').value) / 100;
+            
+            document.getElementById('nValue').textContent = n;
+            document.getElementById('totalValue').textContent = total;
+            document.getElementById('equalityValue').textContent = Math.round(equality * 100) + '%';
+            
+            // Calculate inequality indicator
+            // When equality is high, I is low (perfect equality = 0, total inequality = 1)
+            const I = 1 - equality;
+            
+            // Calculate shared joy value using Saint Martin equation
+            const Js = total * (n - I);
+            const multiplication = Js / total;
+            
+            document.getElementById('inequalityResult').textContent = I.toFixed(3);
+            document.getElementById('baseValueResult').textContent = total.toFixed(1);
+            document.getElementById('sharedJoyResult').textContent = Js.toFixed(1);
+            document.getElementById('multiplicationResult').textContent = multiplication.toFixed(2) + 'x';
+            
+            // Update sharing chart
+            drawSharingChart(n, total, equality);
+        }
+        
+        function drawSharingChart(n, total, equality) {
+            const ctx = document.getElementById('sharingChart');
+            if (!ctx) return;
+            
+            // Generate distribution data
+            const labels = [];
+            const unequal = [];
+            const equal = [];
+            
+            for (let i = 0; i < n; i++) {
+                labels.push('P' + (i + 1));
+                const unequalShare = i === 0 ? total : 0;
+                const equalShare = total / n;
+                const distribution = unequalShare * (1 - equality) + equalShare * equality;
+                unequal.push(unequalShare);
+                equal.push(distribution);
+            }
+            
+            if (charts.sharingChart) {
+                charts.sharingChart.destroy();
+            }
+            
+            charts.sharingChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Unequal Distribution',
+                            data: unequal,
+                            backgroundColor: 'rgba(244, 67, 54, 0.6)',
+                            borderColor: 'rgb(244, 67, 54)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Distribution with Sharing',
+                            data: equal,
+                            backgroundColor: 'rgba(76, 175, 80, 0.6)',
+                            borderColor: 'rgb(76, 175, 80)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Value Distribution: Effect of Sharing'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Value per Person'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Technology Model
+        let currentOutputModel = 'exponential';
+        
+        function selectOutputModel(model) {
+            currentOutputModel = model;
+            document.querySelectorAll('.scenario-button').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            updateTechModel();
+        }
+        
+        function updateTechModel() {
+            const T = parseFloat(document.getElementById('techSlider').value);
+            const beta = parseFloat(document.getElementById('betaSlider').value);
+            const gamma = parseFloat(document.getElementById('gammaSlider').value);
+            
+            document.getElementById('techValue').textContent = T.toFixed(1);
+            document.getElementById('betaValue').textContent = beta.toFixed(1);
+            document.getElementById('gammaValue').textContent = gamma.toFixed(1);
+            
+            drawTechnologyChart(T, beta, gamma, currentOutputModel);
+        }
+        
+        function drawTechnologyChart(T, beta, gamma, model) {
+            const ctx = document.getElementById('technologyChart');
+            if (!ctx) return;
+            
+            const maxP = 100;
+            const labels = [];
+            const needs = [];
+            const output = [];
+            const equilibriumPoints = [];
+            
+            for (let p = 1; p <= maxP; p++) {
+                labels.push(p);
+                needs.push(gamma * p);
+                
+                let o;
+                if (model === 'exponential') {
+                    o = 0.5 * Math.pow(p, beta) * T; // α = 0.5
+                } else {
+                    const M = maxP * gamma * 1.5;
+                    const k = 0.1;
+                    const P0 = 50;
+                    o = M / (1 + Math.exp(-k * (p - P0) / P0));
+                }
+                output.push(o);
+                
+                // Track equilibrium
+                if (p > 1 && Math.abs(output[p-1] - needs[p-1]) < 5) {
+                    equilibriumPoints.push(p);
+                }
+            }
+            
+            if (charts.technologyChart) {
+                charts.technologyChart.destroy();
+            }
+            
+            charts.technologyChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Aggregate Needs N(P)',
+                            data: needs,
+                            borderColor: 'rgb(244, 67, 54)',
+                            backgroundColor: 'rgba(244, 67, 54, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Potential Output O(P)',
+                            data: output,
+                            borderColor: 'rgb(102, 126, 234)',
+                            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Needs-Output Dynamics: ' + (model === 'exponential' ? 'Exponential Model' : 'Sigmoid Model')
+                        }
+                    },
+                    scales: {
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Value / Energy'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Population'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Equilibria Model
+        function updateEquilibria() {
+            const popRange = parseFloat(document.getElementById('popRangeSlider').value);
+            const capacity = parseFloat(document.getElementById('capacitySlider').value);
+            const techLevel = parseFloat(document.getElementById('techLevelSlider').value);
+            
+            document.getElementById('popRangeValue').textContent = popRange;
+            document.getElementById('capacityValue').textContent = capacity;
+            document.getElementById('techLevelValue').textContent = techLevel.toFixed(1);
+            
+            // Find equilibrium population
+            const eqPop = Math.sqrt((popRange * capacity) / techLevel);
+            const status = eqPop <= capacity ? 'Safe' : 'Overshoot';
+            const statusColor = eqPop <= capacity ? '#4caf50' : '#f44336';
+            const buffer = Math.round(((capacity - eqPop) / capacity) * 100);
+            
+            document.getElementById('eqPopResult').textContent = eqPop.toFixed(0);
+            document.getElementById('eqStatusResult').textContent = status;
+            document.getElementById('eqStatusResult').style.color = statusColor;
+            document.getElementById('eqBufferResult').textContent = buffer + '%';
+            
+            drawEquilibriaChart(popRange, capacity, techLevel, eqPop);
+        }
+        
+        function drawEquilibriaChart(popRange, capacity, techLevel, eqPop) {
+            const ctx = document.getElementById('equilibriaChart');
+            if (!ctx) return;
+            
+            const labels = [];
+            const needs = [];
+            const output = [];
+            const envCapacity = [];
+            
+            for (let p = 0; p <= popRange; p += popRange / 50) {
+                labels.push(p.toFixed(0));
+                needs.push(2 * p);
+                output.push(Math.pow(p, 1.2) * techLevel);
+                envCapacity.push(capacity);
+            }
+            
+            if (charts.equilibriaChart) {
+                charts.equilibriaChart.destroy();
+            }
+            
+            charts.equilibriaChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Aggregate Needs',
+                            data: needs,
+                            borderColor: 'rgb(244, 67, 54)',
+                            borderWidth: 2,
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Potential Output',
+                            data: output,
+                            borderColor: 'rgb(102, 126, 234)',
+                            borderWidth: 2,
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Environmental Capacity',
+                            data: envCapacity,
+                            borderColor: 'rgb(76, 175, 80)',
+                            borderDash: [5, 5],
+                            borderWidth: 2,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' },
+                        title: {
+                            display: true,
+                            text: 'Dynamic Equilibria within Environmental Capacity'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Value / Capacity'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Population'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Synthesis scenarios
+        function generateScenario(scenarioType) {
+            let params = {};
+            
+            if (scenarioType === 'sustainable') {
+                params = { tech: 3.5, sharing: 0.9, needsAware: true };
+                drawScenarioOutput(
+                    'Sustainable Model (High Tech + Sharing)',
+                    'Technology Level: 3.5 | Sharing Equality: 90% | Needs Awareness: ✓',
+                    'This scenario combines advanced technology, strong sharing mechanisms, and awareness of finite needs. Economic equilibrium is achieved at low population with high per-capita satisfaction. Environmental capacity is never exceeded.',
+                    '#4caf50'
+                );
+            } else if (scenarioType === 'transitional') {
+                params = { tech: 2.0, sharing: 0.6, needsAware: false };
+                drawScenarioOutput(
+                    'Transitional Model',
+                    'Technology Level: 2.0 | Sharing Equality: 60% | Needs Awareness: Partial',
+                    'This scenario represents an economy transitioning toward moral economic principles. Moderate technology and sharing create tensions, but environmental overshoot remains manageable. Policy interventions can accelerate transition.',
+                    '#ff9800'
+                );
+            } else {
+                params = { tech: 1.2, sharing: 0.3, needsAware: false };
+                drawScenarioOutput(
+                    'Current System (Limited Sharing, Growth-Oriented)',
+                    'Technology Level: 1.2 | Sharing Equality: 30% | Needs Awareness: ✗',
+                    'This scenario reflects contemporary economies with low sharing, infinite growth assumptions, and minimal needs awareness. Environmental overshoot occurs despite rising output. Unsustainable long-term.',
+                    '#f44336'
+                );
+            }
+            
+            drawSynthesisComparison(params);
+        }
+        
+        function drawScenarioOutput(title, params, description, color) {
+            const output = document.getElementById('scenarioOutput');
+            output.innerHTML = `
+                <div style="background: ${color}22; border-left: 4px solid ${color}; padding: 15px; border-radius: 4px;">
+                    <strong style="color: ${color};">${title}</strong>
+                    <p style="font-size: 12px; margin-top: 6px; color: #333;">${params}</p>
+                    <p style="font-size: 13px; margin-top: 8px;">${description}</p>
+                </div>
+            `;
+        }
+        
+        function drawSynthesisComparison(params) {
+            const ctx = document.getElementById('synthesisChart');
+            if (!ctx) return;
+            
+            const labels = ['Tech\nLevel', 'Sharing\nEquality', 'Needs\nAwareness', 'Sustainability', 'Per-Capita\nWelfare'];
+            const data = [
+                params.tech / 3.5 * 100,
+                params.sharing * 100,
+                params.needsAware ? 100 : 30,
+                params.tech * params.sharing > 1.5 ? 80 : (params.tech * params.sharing > 0.8 ? 50 : 20),
+                params.sharing * 100 * (params.needsAware ? 1.2 : 0.8)
+            ];
+            
+            if (charts.synthesisChart) {
+                charts.synthesisChart.destroy();
+            }
+            
+            charts.synthesisChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Scenario Profile',
+                        data: data,
+                        borderColor: 'rgb(102, 126, 234)',
+                        backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                        borderWidth: 2,
+                        pointRadius: 5,
+                        pointBackgroundColor: 'rgb(102, 126, 234)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' },
+                        title: {
+                            display: true,
+                            text: 'Scenario Profile Comparison'
+                        }
+                    },
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            updateSharingModel();
+            updateTechModel();
+            updateEquilibria();
+        });
+    </script>
+</body>
+</html>
