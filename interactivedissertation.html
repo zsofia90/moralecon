@@ -753,7 +753,7 @@ Jₛ = ΣJᵢ × (n - I)
             const I = 1 - equality;
             
             // Calculate shared joy value using Saint Martin equation
-            const Js = total * (n - I);
+            const Js = total * (1 + (n - 1) * (1 - I)); // multiplier varies between 1 and n
             const multiplication = Js / total;
             
             document.getElementById('inequalityResult').textContent = I.toFixed(3);
@@ -773,7 +773,7 @@ Jₛ = ΣJᵢ × (n - I)
             const I = 1 - equality;
             
             // Calculate shared joy value (total multiplied value)
-            const Js = total * (n - I);
+            const Js = total * (1 + (n - 1) * (1 - I)); // multiplier varies between 1 and n
             
             // Generate distribution data
             const labels = [];
