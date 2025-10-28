@@ -777,17 +777,20 @@ Jₛ = ΣJᵢ × (n - I)
             
             // Generate distribution data
             const labels = [];
-            const unequal = [];
-            const sharedPerPerson = [];
+            const unequalDist = [];
+            const equalDistBase = [];
+            const equalDistMultiplied = [];
             
             for (let i = 0; i < n; i++) {
                 labels.push('P' + (i + 1));
                 // Unequal: first person gets all
-                const unequalShare = i === 0 ? total : 0;
-                unequal.push(unequalShare);
+                unequalDist.push(i === 0 ? total : 0);
                 
-                // With sharing: equal distribution of the MULTIPLIED value
-                sharedPerPerson.push(Js / n);
+                // Equal distribution WITHOUT multiplication (just base value split)
+                equalDistBase.push(total / n);
+                
+                // Equal distribution WITH multiplication (Saint Martin effect)
+                equalDistMultiplied.push(Js / n);
             }
             
             if (charts.sharingChart) {
@@ -800,15 +803,22 @@ Jₛ = ΣJᵢ × (n - I)
                     labels: labels,
                     datasets: [
                         {
-                            label: 'Unequal Distribution (Base Value)',
-                            data: unequal,
+                            label: 'Unequal Distribution',
+                            data: unequalDist,
                             backgroundColor: 'rgba(244, 67, 54, 0.6)',
                             borderColor: 'rgb(244, 67, 54)',
                             borderWidth: 1
                         },
                         {
-                            label: 'Equal Distribution (Multiplied Value)',
-                            data: sharedPerPerson,
+                            label: 'Equal Distribution (Base Value Only)',
+                            data: equalDistBase,
+                            backgroundColor: 'rgba(255, 152, 0, 0.6)',
+                            borderColor: 'rgb(255, 152, 0)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Equal Distribution (With Value Multiplication)',
+                            data: equalDistMultiplied,
                             backgroundColor: 'rgba(76, 175, 80, 0.6)',
                             borderColor: 'rgb(76, 175, 80)',
                             borderWidth: 1
@@ -830,6 +840,8 @@ Jₛ = ΣJᵢ × (n - I)
                             callbacks: {
                                 afterLabel: function(context) {
                                     if (context.datasetIndex === 1) {
+                                        return 'Simple split, no multiplication';
+                                    } else if (context.datasetIndex === 2) {
                                         return 'Total shared value: ' + Js.toFixed(1);
                                     }
                                     return '';
@@ -940,13 +952,13 @@ Jₛ = ΣJᵢ × (n - I)
                         y: {
                             title: {
                                 display: true,
-                                text: 'Value / Energy'
+                                text: 'Population (in 100 millions)'
                             }
                         },
                         x: {
                             title: {
                                 display: true,
-                                text: 'Population'
+                                text: 'Population (in 100 millions)'
                             }
                         }
                     }
@@ -1046,7 +1058,7 @@ Jₛ = ΣJᵢ × (n - I)
                         x: {
                             title: {
                                 display: true,
-                                text: 'Population'
+                                text: 'Population (in 100 millions)'
                             }
                         }
                     }
