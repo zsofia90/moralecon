@@ -616,7 +616,7 @@ Jₛ = ΣJᵢ × (n - I)
                     </div>
                     
                     <div class="note">
-                        <strong>Note:</strong> The model identifies three phases: (1) <strong>Scarcity</strong> – low population, insufficient output; (2) <strong>Surplus</strong> – growing population, abundant output; (3) <strong>Stability</strong> – large population with sufficient output but environmental constraints. S-shaped models distinguish these phases clearly.
+                        <strong>Note:</strong> The model identifies three phases: (1) <strong>Scarcity</strong> — low population, insufficient output; (2) <strong>Surplus</strong> — growing population, abundant output; (3) <strong>Stability</strong> — large population with sufficient output but environmental constraints. S-shaped models distinguish these phases clearly.
                     </div>
                 </div>
             </div>
@@ -750,7 +750,6 @@ Jₛ = ΣJᵢ × (n - I)
             document.getElementById('equalityValue').textContent = Math.round(equality * 100) + '%';
             
             // Calculate inequality indicator
-            // When equality is high, I is low (perfect equality = 0, total inequality = 1)
             const I = 1 - equality;
             
             // Calculate shared joy value using Saint Martin equation
@@ -770,18 +769,25 @@ Jₛ = ΣJᵢ × (n - I)
             const ctx = document.getElementById('sharingChart');
             if (!ctx) return;
             
+            // Calculate inequality indicator
+            const I = 1 - equality;
+            
+            // Calculate shared joy value (total multiplied value)
+            const Js = total * (n - I);
+            
             // Generate distribution data
             const labels = [];
             const unequal = [];
-            const equal = [];
+            const sharedPerPerson = [];
             
             for (let i = 0; i < n; i++) {
                 labels.push('P' + (i + 1));
+                // Unequal: first person gets all
                 const unequalShare = i === 0 ? total : 0;
-                const equalShare = total / n;
-                const distribution = unequalShare * (1 - equality) + equalShare * equality;
                 unequal.push(unequalShare);
-                equal.push(distribution);
+                
+                // With sharing: equal distribution of the MULTIPLIED value
+                sharedPerPerson.push(Js / n);
             }
             
             if (charts.sharingChart) {
@@ -794,15 +800,15 @@ Jₛ = ΣJᵢ × (n - I)
                     labels: labels,
                     datasets: [
                         {
-                            label: 'Unequal Distribution',
+                            label: 'Unequal Distribution (Base Value)',
                             data: unequal,
                             backgroundColor: 'rgba(244, 67, 54, 0.6)',
                             borderColor: 'rgb(244, 67, 54)',
                             borderWidth: 1
                         },
                         {
-                            label: 'Distribution with Sharing',
-                            data: equal,
+                            label: 'Equal Distribution (Multiplied Value)',
+                            data: sharedPerPerson,
                             backgroundColor: 'rgba(76, 175, 80, 0.6)',
                             borderColor: 'rgb(76, 175, 80)',
                             borderWidth: 1
@@ -818,7 +824,17 @@ Jₛ = ΣJᵢ × (n - I)
                         },
                         title: {
                             display: true,
-                            text: 'Value Distribution: Effect of Sharing'
+                            text: 'Value Distribution: Effect of Sharing (Per Person)'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                afterLabel: function(context) {
+                                    if (context.datasetIndex === 1) {
+                                        return 'Total shared value: ' + Js.toFixed(1);
+                                    }
+                                    return '';
+                                }
+                            }
                         }
                     },
                     scales: {
@@ -864,7 +880,6 @@ Jₛ = ΣJᵢ × (n - I)
             const labels = [];
             const needs = [];
             const output = [];
-            const equilibriumPoints = [];
             
             for (let p = 1; p <= maxP; p++) {
                 labels.push(p);
@@ -872,7 +887,7 @@ Jₛ = ΣJᵢ × (n - I)
                 
                 let o;
                 if (model === 'exponential') {
-                    o = 0.5 * Math.pow(p, beta) * T; // α = 0.5
+                    o = 0.5 * Math.pow(p, beta) * T;
                 } else {
                     const M = maxP * gamma * 1.5;
                     const k = 0.1;
@@ -880,11 +895,6 @@ Jₛ = ΣJᵢ × (n - I)
                     o = M / (1 + Math.exp(-k * (p - P0) / P0));
                 }
                 output.push(o);
-                
-                // Track equilibrium
-                if (p > 1 && Math.abs(output[p-1] - needs[p-1]) < 5) {
-                    equilibriumPoints.push(p);
-                }
             }
             
             if (charts.technologyChart) {
@@ -954,7 +964,6 @@ Jₛ = ΣJᵢ × (n - I)
             document.getElementById('capacityValue').textContent = capacity;
             document.getElementById('techLevelValue').textContent = techLevel.toFixed(1);
             
-            // Find equilibrium population
             const eqPop = Math.sqrt((popRange * capacity) / techLevel);
             const status = eqPop <= capacity ? 'Safe' : 'Overshoot';
             const statusColor = eqPop <= capacity ? '#4caf50' : '#f44336';
